@@ -1,12 +1,4 @@
 black
-beautifulsoup4
-bertopic
-langdetect
-nltk
 requests
-scikit-learn
 tqdm
-python-dotenv
-chromadb
-rank_bm25
-gensim
+pandas
