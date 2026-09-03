@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 import requests
 import random
+import html
 import json
 import time
 import tqdm
@@ -81,7 +82,7 @@ def updateVideogames() -> None:
         for item in searchResults["items"]:
 
             try:
-                name = item["name"]
+                name = html.unescape(item["name"])
 
                 # The URL can be steam/bundles/{appid} or steam/apps/{appid}
                 appid = re.search(r"steam/\w+/(\d+)", item["logo"]).group(1)
@@ -129,7 +130,6 @@ def fetchReviews(id: int, videogame: str, forceRefresh: bool = False) -> None:
     """
     currentDirectory = os.path.dirname(os.path.abspath(__file__))
     dataDirectory = os.path.join(currentDirectory, "rawData")
-    os.makedirs(dataDirectory, exist_ok=True)
 
     url = f"https://store.steampowered.com/appreviews/{id}?json=1"
     parameters = {"filter": "all", "language": "english", "num_per_page": 100}
@@ -202,6 +202,8 @@ def getAllGames(forceRefresh: bool = False) -> None:
     """
     currentDirectory = os.path.dirname(os.path.abspath(__file__))
     videogamesPath = os.path.join(currentDirectory, "videogames.json")
+
+    os.makedirs(os.path.join(currentDirectory, "rawData"), exist_ok=True)
 
     with open(videogamesPath, "r", encoding="utf-8") as file:
         videogames = json.load(file)
