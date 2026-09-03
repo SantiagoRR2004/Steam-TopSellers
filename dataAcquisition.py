@@ -41,7 +41,7 @@ def steamSearchResults(params: dict) -> dict:
 def updateVideogames() -> None:
     """
     Fetches the top 100 video games from the Steam store and updates
-    the "videogames.json" file with their names and app IDs.
+    the "topSellers.json" file with their names and app IDs.
 
     Args:
         - None
@@ -50,7 +50,7 @@ def updateVideogames() -> None:
         - None
     """
     currentDirectory = os.path.dirname(os.path.abspath(__file__))
-    videogamesFile = os.path.join(currentDirectory, "videogames.json")
+    videogamesFile = os.path.join(currentDirectory, "topSellers.json")
     topSellersFile = os.path.join(currentDirectory, "topSellers.csv")
 
     with open(videogamesFile, "r", encoding="utf-8") as f:
@@ -113,6 +113,84 @@ def updateVideogames() -> None:
     df.to_csv(topSellersFile, index=False)
 
 
+def divideCategories() -> None:
+    """
+    Divides the video games in "topSellers.json" into different categories
+    based on their type (game, dlc, music, hardware) and saves them in
+    separate JSON files.
+
+    Args:
+        - None
+
+    Returns:
+        - None
+    """
+    currentDirectory = os.path.dirname(os.path.abspath(__file__))
+    topSellersJsonPath = os.path.join(currentDirectory, "topSellers.json")
+
+    # Ensure the folders exist
+    rawDataDirectory = os.path.join(currentDirectory, "rawData")
+    os.makedirs(rawDataDirectory, exist_ok=True)
+
+    # Different type of products
+    videogames = {}
+    dlcs = {}
+    music = {}
+    hardware = {}
+
+    with open(topSellersJsonPath, "r", encoding="utf-8") as f:
+        allItems = json.load(f)
+
+    for videogame, id in tqdm.tqdm(allItems.items(), desc="Fetching basic info"):
+
+        filePath = os.path.join(
+            rawDataDirectory, f"{videogame.replace('/', '_')}Info.json"
+        )
+
+        # Ensure that the game info is fetched if the file does not exist
+        if not os.path.exists(filePath):
+            fetchGameInfo(id, videogame, False)
+
+        with open(filePath, "r", encoding="utf-8") as f:
+            gameInfo = json.load(f)
+
+        # Add to the correct category
+        if gameInfo["type"] == "game":
+            videogames[videogame] = id
+        elif gameInfo["type"] == "dlc":
+            dlcs[videogame] = id
+        elif gameInfo["type"] == "music":
+            music[videogame] = id
+        elif gameInfo["type"] == "hardware":
+            hardware[videogame] = id
+        else:
+            raise ValueError(f"Unknown type for {videogame}: {gameInfo['type']}")
+
+    # Sort the categories
+    videogames = dict(sorted(videogames.items(), key=lambda x: x[0].lower()))
+    dlcs = dict(sorted(dlcs.items(), key=lambda x: x[0].lower()))
+    music = dict(sorted(music.items(), key=lambda x: x[0].lower()))
+    hardware = dict(sorted(hardware.items(), key=lambda x: x[0].lower()))
+
+    # Save the categories
+    with open(
+        os.path.join(currentDirectory, "videogames.json"), "w", encoding="utf-8"
+    ) as f:
+        json.dump(videogames, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    with open(os.path.join(currentDirectory, "dlcs.json"), "w", encoding="utf-8") as f:
+        json.dump(dlcs, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    with open(os.path.join(currentDirectory, "music.json"), "w", encoding="utf-8") as f:
+        json.dump(music, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    with open(
+        os.path.join(currentDirectory, "hardware.json"), "w", encoding="utf-8"
+    ) as f:
+        json.dump(hardware, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
 def fetchReviews(id: int, videogame: str, forceRefresh: bool = False) -> None:
     """
     Fetches reviews for a given video game from the Steam store
@@ -137,7 +215,8 @@ def fetchReviews(id: int, videogame: str, forceRefresh: bool = False) -> None:
     for reviewType in ["positive", "negative"]:
 
         outputPath = os.path.join(
-            dataDirectory, f"{videogame}{reviewType.capitalize()}.jsonl"
+            dataDirectory,
+            f"{videogame.replace('/', '_')}{reviewType.capitalize()}.jsonl",
         )
 
         if not os.path.exists(outputPath) or forceRefresh:
@@ -177,7 +256,9 @@ def fetchGameInfo(id: int, videogame: str, forceRefresh: bool = False) -> None:
     """
     currentDirectory = os.path.dirname(os.path.abspath(__file__))
     dataDirectory = os.path.join(currentDirectory, "rawData")
-    gameInfoPath = os.path.join(dataDirectory, f"{videogame}Info.json")
+    gameInfoPath = os.path.join(
+        dataDirectory, f"{videogame.replace('/', '_')}Info.json"
+    )
 
     if not os.path.exists(gameInfoPath) or forceRefresh:
         url = f"https://store.steampowered.com/api/appdetails?appids={id}"
@@ -217,3 +298,4 @@ def getAllGames(forceRefresh: bool = False) -> None:
 
 if __name__ == "__main__":
     updateVideogames()
+    divideCategories()
