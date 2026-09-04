@@ -133,13 +133,30 @@ def divideCategories() -> None:
     os.makedirs(rawDataDirectory, exist_ok=True)
 
     # Different type of products
-    videogames = {}
-    dlcs = {}
-    music = {}
-    hardware = {}
+    with open(
+        os.path.join(currentDirectory, "videogames.json"), "r", encoding="utf-8"
+    ) as f:
+        videogames = json.load(f)
+    with open(os.path.join(currentDirectory, "dlcs.json"), "r", encoding="utf-8") as f:
+        dlcs = json.load(f)
+    with open(os.path.join(currentDirectory, "music.json"), "r", encoding="utf-8") as f:
+        music = json.load(f)
+    with open(
+        os.path.join(currentDirectory, "hardware.json"), "r", encoding="utf-8"
+    ) as f:
+        hardware = json.load(f)
 
     with open(topSellersJsonPath, "r", encoding="utf-8") as f:
         allItems = json.load(f)
+
+    # Filter out items that are already classified
+    classifiedIDs = (
+        set(videogames.values())
+        | set(dlcs.values())
+        | set(music.values())
+        | set(hardware.values())
+    )
+    allItems = {k: v for k, v in allItems.items() if v not in classifiedIDs}
 
     for videogame, id in tqdm.tqdm(allItems.items(), desc="Fetching basic info"):
 
