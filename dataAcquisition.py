@@ -282,10 +282,12 @@ def fetchGameInfo(id: int, videogame: str, forceRefresh: bool = False) -> None:
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            if data[str(id)]["success"]:
+            if data.get(str(id), {}).get("success"):
                 with open(gameInfoPath, "w", encoding="utf-8") as file:
                     json.dump(data[str(id)]["data"], file, indent=2, ensure_ascii=False)
                     file.write("\n")
+            else:
+                print(data)
 
 
 def getAllGames(forceRefresh: bool = False) -> None:
