@@ -284,7 +284,12 @@ def fetchGameInfo(id: int, videogame: str, forceRefresh: bool = False) -> None:
             data = response.json()
             if list(data.values())[0].get("success"):
                 with open(gameInfoPath, "w", encoding="utf-8") as file:
-                    json.dump(list(data.values())[0]["data"], file, indent=2, ensure_ascii=False)
+                    json.dump(
+                        list(data.values())[0]["data"],
+                        file,
+                        indent=2,
+                        ensure_ascii=False,
+                    )
                     file.write("\n")
             else:
                 print(data)
