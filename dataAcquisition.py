@@ -88,7 +88,7 @@ def updateVideogames() -> None:
                 appid = re.search(r"steam/\w+/(\d+)", item["logo"]).group(1)
 
                 # Save the appid in the videogame json for later use
-                videogames[name] = int(appid)
+                videogames[str(appid)] = name
                 dailyTopSellers.append(appid)
 
             except Exception as e:
@@ -96,7 +96,7 @@ def updateVideogames() -> None:
                 item["appid"] = None
 
     # Sort by name
-    videogames = dict(sorted(videogames.items(), key=lambda x: x[0].lower()))
+    videogames = dict(sorted(videogames.items(), key=lambda x: x[1].lower()))
 
     # Save the search results
     with open(videogamesFile, "w", encoding="utf-8") as f:
@@ -151,14 +151,14 @@ def divideCategories() -> None:
 
     # Filter out items that are already classified
     classifiedIDs = (
-        set(videogames.values())
-        | set(dlcs.values())
-        | set(music.values())
-        | set(hardware.values())
+        set(videogames.keys())
+        | set(dlcs.keys())
+        | set(music.keys())
+        | set(hardware.keys())
     )
-    allItems = {k: v for k, v in allItems.items() if v not in classifiedIDs}
+    allItems = {k: v for k, v in allItems.items() if k not in classifiedIDs}
 
-    for videogame, id in tqdm.tqdm(allItems.items(), desc="Fetching basic info"):
+    for id, videogame in tqdm.tqdm(allItems.items(), desc="Fetching basic info"):
 
         filePath = os.path.join(
             rawDataDirectory, f"{videogame.replace('/', '_')}Info.json"
@@ -178,21 +178,21 @@ def divideCategories() -> None:
 
         # Add to the correct category
         if gameInfo["type"] == "game":
-            videogames[videogame] = id
+            videogames[id] = videogame
         elif gameInfo["type"] == "dlc":
-            dlcs[videogame] = id
+            dlcs[id] = videogame
         elif gameInfo["type"] == "music":
-            music[videogame] = id
+            music[id] = videogame
         elif gameInfo["type"] == "hardware":
-            hardware[videogame] = id
+            hardware[id] = videogame
         else:
             raise ValueError(f"Unknown type for {videogame}: {gameInfo['type']}")
 
     # Sort the categories
-    videogames = dict(sorted(videogames.items(), key=lambda x: x[0].lower()))
-    dlcs = dict(sorted(dlcs.items(), key=lambda x: x[0].lower()))
-    music = dict(sorted(music.items(), key=lambda x: x[0].lower()))
-    hardware = dict(sorted(hardware.items(), key=lambda x: x[0].lower()))
+    videogames = dict(sorted(videogames.items(), key=lambda x: x[1].lower()))
+    dlcs = dict(sorted(dlcs.items(), key=lambda x: x[1].lower()))
+    music = dict(sorted(music.items(), key=lambda x: x[1].lower()))
+    hardware = dict(sorted(hardware.items(), key=lambda x: x[1].lower()))
 
     # Save the categories
     with open(
@@ -287,10 +287,20 @@ def fetchGameInfo(id: int, videogame: str, forceRefresh: bool = False) -> None:
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            if data.get(str(id), {}).get("success"):
+
+            success = list(data.values())[0].get("success", False)
+            steamAppid = list(data.values())[0].get("data", {}).get("steam_appid", None)
+
+            if success and steamAppid == int(id):
                 with open(gameInfoPath, "w", encoding="utf-8") as file:
-                    json.dump(data[str(id)]["data"], file, indent=2, ensure_ascii=False)
+                    json.dump(
+                        list(data.values())[0]["data"],
+                        file,
+                        indent=2,
+                        ensure_ascii=False,
+                    )
                     file.write("\n")
+
             else:
                 print(data)
 
