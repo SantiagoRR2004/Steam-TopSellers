@@ -168,6 +168,11 @@ def divideCategories() -> None:
         if not os.path.exists(filePath):
             fetchGameInfo(id, videogame, False)
 
+        # Skip if the file still does not exist after fetching
+        if not os.path.exists(filePath):
+            print(f"Skipping {videogame} (ID: {id}) as info file could not be fetched.")
+            continue
+
         with open(filePath, "r", encoding="utf-8") as f:
             gameInfo = json.load(f)
 
@@ -282,14 +287,9 @@ def fetchGameInfo(id: int, videogame: str, forceRefresh: bool = False) -> None:
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            if list(data.values())[0].get("success"):
+            if data.get(str(id), {}).get("success"):
                 with open(gameInfoPath, "w", encoding="utf-8") as file:
-                    json.dump(
-                        list(data.values())[0]["data"],
-                        file,
-                        indent=2,
-                        ensure_ascii=False,
-                    )
+                    json.dump(data[str(id)]["data"], file, indent=2, ensure_ascii=False)
                     file.write("\n")
             else:
                 print(data)
