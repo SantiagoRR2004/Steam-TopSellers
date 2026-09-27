@@ -1,7 +1,7 @@
 {
-  "Steam Controller": 4165870,
-  "Steam Deck": 1675200,
-  "Steam Deck Docking Station": 1696780,
-  "Steam Frame": 4165890,
-  "Steam Machine": 4165910
+  "4165870": "Steam Controller",
+  "1675200": "Steam Deck",
+  "1696780": "Steam Deck Docking Station",
+  "4165890": "Steam Frame",
+  "4165910": "Steam Machine"
 }
