@@ -36,17 +36,20 @@ jobs:
             git add .
             git commit \
               -m "chore: Update videogames.json [GitHub Action]" \
-              -m "Co-authored-by: casieber <5363253+casieber@users.noreply.github.com>"
-              -m "Co-authored-by: charleslvalve <55813982+charleslvalve@users.noreply.github.com>"
-              -m "Co-authored-by: danieljennings <582974+danieljennings@users.noreply.github.com>"
-              -m "Co-authored-by: kisak-valve <24358216+kisak-valve@users.noreply.github.com>"
-              -m "Co-authored-by: mikela-valve <49570952+mikela-valve@users.noreply.github.com>"
-              -m "Co-authored-by: MrSchism <3085862+MrSchism@users.noreply.github.com>"
-              -m "Co-authored-by: Nephyrin <965090+Nephyrin@users.noreply.github.com>"
-              -m "Co-authored-by: Plagman <529930+Plagman@users.noreply.github.com>"
-              -m "Co-authored-by: SantiagoRR2004 <114857078+SantiagoRR2004@users.noreply.github.com>"
-              -m "Co-authored-by: GitHub Action <action@github.com>"
-            git push
+              -m "$(cat <<'EOF'
+          Co-authored-by: casieber <5363253+casieber@users.noreply.github.com>
+          Co-authored-by: charleslvalve <55813982+charleslvalve@users.noreply.github.com>
+          Co-authored-by: danieljennings <582974+danieljennings@users.noreply.github.com>
+          Co-authored-by: kisak-valve <24358216+kisak-valve@users.noreply.github.com>
+          Co-authored-by: mikela-valve <49570952+mikela-valve@users.noreply.github.com>
+          Co-authored-by: MrSchism <3085862+MrSchism@users.noreply.github.com>
+          Co-authored-by: Nephyrin <965090+Nephyrin@users.noreply.github.com>
+          Co-authored-by: Plagman <529930+Plagman@users.noreply.github.com>
+          Co-authored-by: SantiagoRR2004 <114857078+SantiagoRR2004@users.noreply.github.com>
+          Co-authored-by: GitHub Action <action@github.com>
+          EOF
+          )"
+              git push
           else
             echo "No changes to push."
           fi
